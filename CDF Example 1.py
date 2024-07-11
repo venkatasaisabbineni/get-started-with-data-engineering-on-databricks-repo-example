@@ -11,7 +11,7 @@ spark = SparkSession.builder \
 # MAGIC %sql
 # MAGIC CREATE SCHEMA IF NOT EXISTS CDF_Example;
 # MAGIC USE SCHEMA CDF_Example;
-# MAGIC CREATE TABLE IF NOT EXISTS Salary_Account (
+# MAGIC CREATE TABLE IF NOT EXISTS CDF_Example.Salary_Account (
 # MAGIC     Id INT,
 # MAGIC     Name STRING,
 # MAGIC     Salary INT
@@ -22,14 +22,14 @@ spark = SparkSession.builder \
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC INSERT INTO Salary_Account (id, name, Salary) VALUES
+# MAGIC INSERT INTO CDF_Example.Salary_Account (id, name, Salary) VALUES
 # MAGIC (1, 'Venkata Sai', 65000),
 # MAGIC (2, 'Mallikarjuna Rao', 80000)
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE TABLE IF NOT EXISTS CDF_Target_Table (
+# MAGIC CREATE TABLE IF NOT EXISTS CDF_Example.CDF_Target_Table (
 # MAGIC     Id INT,
 # MAGIC     Name STRING,
 # MAGIC     Salary INT
@@ -39,7 +39,7 @@ spark = SparkSession.builder \
 
 # COMMAND ----------
 
-checkpoint_path = "/tmp/checkpoints/change_feed_example"
+checkpoint_path = "/tmp/checkpoints/change_feed_example3"
 
 spark.readStream.format("delta") \
   .option("readChangeFeed", "true") \
@@ -56,37 +56,34 @@ spark.readStream.format("delta") \
 # COMMAND ----------
 
 import time
-
+spark.sql("USE SCHEMA CDF_Example")
 for i in range(3, 10):
     spark.sql(f"""
-    INSERT INTO Account_Salary (Id, Name, Salary) VALUES
+    INSERT INTO CDF_Example.Salary_Account (Id, Name, Salary) VALUES
     ({i}, 'Name{i}', {i * 1000})
     """)
-    time.sleep(5)  # Sleep for 5 seconds to simulate periodic insertion
+    time.sleep(5) 
 
-
-# COMMAND ----------
-
-for stream in spark.streams.active:
-    print(f"Stream ID: {stream.id}, Status: {stream.status}")
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC INSERT INTO Salary_Account (Id,Name,Salary) VALUES
-# MAGIC (3,'Sachin',50000)
 
 # COMMAND ----------
 
 # MAGIC %sql 
-# MAGIC SELECT * FROM Salary_Account;
+# MAGIC SELECT * FROM CDF_Example.Salary_Account;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM CDF_Target_Table;
+# MAGIC SELECT * FROM CDF_Example.CDF_Target_Table;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM table_changes('Salary_Account', 1);
+# MAGIC SELECT * FROM table_changes('CDF_Example.Salary_Account', 1)
+# MAGIC ORDER BY _commit_timestamp;
+
+# COMMAND ----------
+
+# %sql
+# DROP TABLE IF EXISTS CDF_Example.Salary_Account;
+# DROP TABLE IF EXISTS CDF_Example.CDF_Target_Table;
+# DROP DATABASE IF EXISTS CDF_Example;
