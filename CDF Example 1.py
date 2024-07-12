@@ -39,7 +39,7 @@ spark = SparkSession.builder \
 
 # COMMAND ----------
 
-checkpoint_path = "/tmp/checkpoints/change_feed_example3"
+checkpoint_path = "/tmp/checkpoints/change_feed_example"
 
 spark.readStream.format("delta") \
   .option("readChangeFeed", "true") \
@@ -62,7 +62,7 @@ for i in range(3, 10):
     INSERT INTO CDF_Example.Salary_Account (Id, Name, Salary) VALUES
     ({i}, 'Name{i}', {i * 1000})
     """)
-    time.sleep(5) 
+    # time.sleep(5) 
 
 
 # COMMAND ----------
@@ -87,3 +87,7 @@ for i in range(3, 10):
 # DROP TABLE IF EXISTS CDF_Example.Salary_Account;
 # DROP TABLE IF EXISTS CDF_Example.CDF_Target_Table;
 # DROP DATABASE IF EXISTS CDF_Example;
+
+# COMMAND ----------
+
+# dbutils.fs.rm(checkpoint_path, recurse=True)
